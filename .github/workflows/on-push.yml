@@ -25,7 +25,7 @@ jobs:
           # to avoid conflicts with the default workspace directory.
           path: ./bazel-repo
       - name: Build
-        run: bazelisk --batch --nohome_rc --nosystemrc build -c opt //src:bazel
+        run: bazelisk --batch --nohome_rc --nosystem_rc build -c opt //src:bazel
         working-directory: ./bazel-repo
       - name: LS
         run: ls -lR
