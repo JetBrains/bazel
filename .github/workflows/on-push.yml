@@ -1,0 +1,22 @@
+name: Print Environment Variables # Name of the workflow displayed on GitHub
+
+on:
+  push: # Trigger the workflow on every push event
+    branches:
+      - '**' # Run on pushes to any branch
+
+jobs:
+  print_vars:
+    name: Print Variables Job # Name of the job displayed on GitHub
+    runs-on: ubuntu-latest # Use the latest Ubuntu runner environment
+
+    steps:
+      - name: Print All Environment Variables
+        run: env | sort # Execute the 'env' command to list all env vars, pipe to 'sort' for readability
+
+# Optional: Add checkout step if you need repo context, though not strictly needed for just printing env vars
+#      - name: Check out repository code
+#        uses: actions/checkout@v4
+
+#      - name: Print Variables After Checkout (might show slightly different vars)
+#        run: env | sort
