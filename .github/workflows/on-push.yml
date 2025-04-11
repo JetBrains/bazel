@@ -25,7 +25,10 @@ jobs:
           # to avoid conflicts with the default workspace directory.
           path: ./bazel-repo
       - name: Build
-        run: bazelisk build -c opt //src:bazel
+        run: bazelisk --batch --nohome_rc --nosystemrc build -c opt //src:bazel
+        working-directory: ./bazel-repo
+      - name: LS
+        run: ls -lR
   
 # Optional: Add checkout step if you need repo context, though not strictly needed for just printing env vars
 #      - name: Check out repository code
