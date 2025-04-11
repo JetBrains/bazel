@@ -7,13 +7,26 @@ on:
 
 jobs:
   print_vars:
-    name: Print Variables Job # Name of the job displayed on GitHub
-    runs-on: ubuntu-latest # Use the latest Ubuntu runner environment
+    name: BB
+    runs-on: ubuntu-22.04 # reasonable minimum version
 
     steps:
       - name: Print All Environment Variables
         run: env | sort # Execute the 'env' command to list all env vars, pipe to 'sort' for readability
-
+      - name: Checkout JetBrains/bazel main branch
+        uses: actions/checkout@v4
+        with:
+          # Specify the repository owner/name
+          repository: JetBrains/bazel
+          # Specify the branch, tag, or commit SHA to checkout
+          ref: master
+          # Optional: Specify a directory path to check out into.
+          # This is recommended when checking out external repos
+          # to avoid conflicts with the default workspace directory.
+          path: ./bazel-repo
+      - name: Build
+        run: bazelisk build -c opt //src:bazel
+  
 # Optional: Add checkout step if you need repo context, though not strictly needed for just printing env vars
 #      - name: Check out repository code
 #        uses: actions/checkout@v4
