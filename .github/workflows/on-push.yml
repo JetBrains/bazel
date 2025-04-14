@@ -34,13 +34,13 @@ jobs:
           env | sort
           mount
           echo ${{ runner.os }}
-      - name: Install zip
+      - name: pwd
         shell: "C:\\Program Files\\Git\\bin\\bash.exe"
         run: |
           pwd
         if: runner.os == 'Windows'
       - name: Install zip
-        shell: "C:\\Program Files\\Git\\bin\\bash.exe"
+        shell: bash
         run: |
           set -x -u -e
           curl -fsSL -o zip.tar.gz https://packages.jetbrains.team/files/p/ij/intellij-dependencies/msys/zip-3.0-4-x86_64.pkg.tar.gz
