@@ -14,7 +14,7 @@ concurrency:
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-22.04 # reasonable minimum version
+    runs-on: ${{ matrix.os }} 
 
     strategy:
       fail-fast: true
@@ -22,6 +22,7 @@ jobs:
         include:
           - os: windows-latest
             exe: .exe
+        # ubuntu-22.04 # reasonable minimum version    
         # os: [ubuntu-22.04, windows-latest]
         #os: [windows-latest]
 
