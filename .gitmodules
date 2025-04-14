@@ -1,3 +1,0 @@
-[submodule "bazel"]
-	path = bazel
-	url = https://github.com/bazelbuild/bazel.git
