@@ -11,6 +11,20 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
+  setup:
+    name: Set Shared Parameters
+    runs-on: ubuntu-latest
+    outputs:
+      jb_bazel_version: ${{ steps.set_params.outputs.jb_bazel_version }}
+      bazel_tag: ${{ steps.set_params.outputs.bazel_tag }}
+    steps:
+      id: set_params
+      run: |
+        set -e -x -u -o pipefail
+        bazel_tag="$(cat bazel-tag.txt)"
+        echo "jb_bazel_version=${bazel_tag}.jb.$(date +%Y%m%d).$GITHUB_RUN_NUMBER" | tee -a "$GITHUB_OUTPUT"
+        echo "bazel_tag=$bazel_tag" | tee -a "$GITHUB_OUTPUT"
+
   build:
     name: Build
     runs-on: ${{ matrix.os }} 
@@ -32,25 +46,28 @@ jobs:
         shell: bash
         run: |
           env | sort
-          mount
           echo ${{ runner.os }}
       - name: Install zip
         shell: bash
         run: |
           set -x -u -e
           curl -fsSL -o zip.tar.gz https://packages.jetbrains.team/files/p/ij/intellij-dependencies/msys/zip-3.0-4-x86_64.pkg.tar.gz
+          echo "d36a3475b43bd1e5de7616e74de6d5fce16a0e672fe93727a7994cf5bba3e113 *zip.tar.gz" | sha256sum --check --strict -
           tar -x -f zip.tar.gz -z -C /
           rm zip.tar.gz
           zip -h
         if: runner.os == 'Windows'
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
+      #  with:
+      #    submodules: recursive
+      - name: Checkout bazel
+        shell: bash
+        run: git clone -b "$(cat bazel-tag.txt)" --depth 1 https://github.com/bazelbuild/bazel.git bazel
       # TODO enable -c opt later    
       # for now only fastbuild
       - name: Build
-        run: bazelisk --batch --nohome_rc --nosystem_rc build -c fastbuild --stamp "--embed_label=$(git rev-parse --short HEAD)" //src:bazel${{ matrix.exe }}
+        run: bazelisk --batch --nohome_rc --nosystem_rc build --verbose_failures -c fastbuild --stamp "--embed_label=$(git rev-parse --short HEAD)" //src:bazel${{ matrix.exe }}
         working-directory: ./bazel
 
       - name: Publish
