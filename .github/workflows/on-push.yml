@@ -16,6 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       jb_bazel_version: ${{ steps.set_params.outputs.jb_bazel_version }}
+      jb_bazel_label: ${{ steps.set_params.outputs.jb_bazel_label }}
       bazel_tag: ${{ steps.set_params.outputs.bazel_tag }}
     steps:
       - name: Checkout
@@ -25,9 +26,9 @@ jobs:
           set -e -x -u -o pipefail
           bazel_tag="$(cat bazel-tag.txt)"
           jb_bazel_version="${bazel_tag}.jb.$(date +%Y%m%d).$GITHUB_RUN_NUMBER"
-          echo "jb_bazel_version=$jb_bazel_version" | tee -a "$GITHUB_OUTPUT"
-          echo "jb_bazel_label=$jb_bazel_version $(git rev-parse --short HEAD)" | tee -a "$GITHUB_OUTPUT"
-          echo "bazel_tag=$bazel_tag" | tee -a "$GITHUB_OUTPUT"
+          echo "jb_bazel_version=$jb_bazel_version" >>"$GITHUB_OUTPUT"
+          echo "jb_bazel_label=$jb_bazel_version $(git rev-parse --short HEAD)" >>"$GITHUB_OUTPUT"
+          echo "bazel_tag=$bazel_tag" >>"$GITHUB_OUTPUT"
 
   build:
     name: Build
@@ -68,7 +69,7 @@ jobs:
       #    submodules: recursive
       - name: Checkout bazel
         shell: bash
-        run: git clone -b ${{ needs.setup.outputs.bazel_tag }} --depth 1 https://github.com/bazelbuild/bazel.git bazel
+        run: git clone --quiet -b ${{ needs.setup.outputs.bazel_tag }} --depth 1 https://github.com/bazelbuild/bazel.git bazel
       # TODO enable -c opt later    
       # for now only fastbuild
       - name: Build
