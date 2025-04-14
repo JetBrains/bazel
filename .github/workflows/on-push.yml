@@ -23,11 +23,13 @@ jobs:
           set -e -x -u -o pipefail
           bazel_tag="$(cat bazel-tag.txt)"
           echo "jb_bazel_version=${bazel_tag}.jb.$(date +%Y%m%d).$GITHUB_RUN_NUMBER" | tee -a "$GITHUB_OUTPUT"
+          echo "jb_bazel_label=$jb_bazel_version $(git rev-parse --short HEAD)" | tee -a "$GITHUB_OUTPUT"
           echo "bazel_tag=$bazel_tag" | tee -a "$GITHUB_OUTPUT"
 
   build:
     name: Build
-    runs-on: ${{ matrix.os }} 
+    runs-on: ${{ matrix.os }}
+    needs: setup
 
     strategy:
       fail-fast: true
@@ -63,17 +65,17 @@ jobs:
       #    submodules: recursive
       - name: Checkout bazel
         shell: bash
-        run: git clone -b "$(cat bazel-tag.txt)" --depth 1 https://github.com/bazelbuild/bazel.git bazel
+        run: git clone -b ${{ needs.setup.outputs.bazel_tag }} --depth 1 https://github.com/bazelbuild/bazel.git bazel
       # TODO enable -c opt later    
       # for now only fastbuild
       - name: Build
-        run: bazelisk --batch --nohome_rc --nosystem_rc build --verbose_failures -c fastbuild --stamp "--embed_label=$(git rev-parse --short HEAD)" //src:bazel${{ matrix.exe }}
+        run: bazelisk --batch --nohome_rc --nosystem_rc build --verbose_failures -c fastbuild --stamp "--embed_label=${{ needs.setup.outputs.jb_bazel_label }}" //src:bazel${{ matrix.exe }}
         working-directory: ./bazel
 
       - name: Publish
         uses: actions/upload-artifact@v4
         with:
-          name: bazel-8.1.1-${{ matrix.artifact_os }}-${{ matrix.artifact_arch }}${{ matrix.exe }}
+          name: bazel-${{ needs.setup.outputs.jb_bazel_version }}-${{ matrix.artifact_os }}-${{ matrix.artifact_arch }}${{ matrix.exe }}
       #- name: LS
       #  run: ls -lLR bazel/bazel-bin/
   
