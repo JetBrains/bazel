@@ -20,8 +20,8 @@ jobs:
       fail-fast: true
       matrix:
         include:
-          os: windows-latest
-          exe: .exe
+          - os: windows-latest
+            exe: .exe
         # os: [ubuntu-22.04, windows-latest]
         #os: [windows-latest]
 
