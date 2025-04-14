@@ -30,7 +30,15 @@ jobs:
     steps:
       - name: Print All Environment Variables
         shell: bash
-        run: env | sort
+        run: |
+          env | sort
+          mount
+          echo ${{ runner.os }}
+      - name: Install zip
+        shell: "C:\\Program Files\\Git\\bin\\bash.exe"
+        run: |
+          pwd
+        if: runner.os == 'Windows'
       - name: Install zip
         shell: "C:\\Program Files\\Git\\bin\\bash.exe"
         run: |
