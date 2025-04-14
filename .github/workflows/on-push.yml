@@ -10,7 +10,6 @@ concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true
 
-
 jobs:
   build:
     name: Build
@@ -22,14 +21,25 @@ jobs:
         include:
           - os: windows-latest
             exe: .exe
+            artifact_os: windows
+            artifact_arch: x86_64
         # ubuntu-22.04 # reasonable minimum version    
         # os: [ubuntu-22.04, windows-latest]
         #os: [windows-latest]
 
     steps:
       - name: Print All Environment Variables
-        run: env | sort # Execute the 'env' command to list all env vars, pipe to 'sort' for readability
-        if: runner.os == 'Linux'
+        shell: bash
+        run: env | sort
+      - name: Install zip
+        shell: "C:\\Program Files\\Git\\bin\\bash.exe"
+        run: |
+          set -x -u -e
+          curl -fsSL -o zip.tar.gz https://packages.jetbrains.team/files/p/ij/intellij-dependencies/msys/zip-3.0-4-x86_64.pkg.tar.gz
+          tar -x -f zip.tar.gz -z -C /
+          rm zip.tar.gz
+          zip -h
+        if: runner.os == 'Windows'
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -39,6 +49,11 @@ jobs:
       - name: Build
         run: bazelisk --batch --nohome_rc --nosystem_rc build -c fastbuild --stamp "--embed_label=$(git rev-parse --short HEAD)" //src:bazel${{ matrix.exe }}
         working-directory: ./bazel
+
+      - name: Publish
+        uses: actions/upload-artifact@v4
+        with:
+          name: bazel-8.1.1-${{ matrix.artifact_os }}-${{ matrix.artifact_arch }}${{ matrix.exe }}
       #- name: LS
       #  run: ls -lLR bazel/bazel-bin/
   
