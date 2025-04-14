@@ -18,18 +18,12 @@ jobs:
     steps:
       - name: Print All Environment Variables
         run: env | sort # Execute the 'env' command to list all env vars, pipe to 'sort' for readability
-      - name: Checkout JetBrains/bazel main branch
+      - name: Checkout
         uses: actions/checkout@v4
         with:
-          # Specify the repository owner/name
-          repository: JetBrains/bazel
-          # Specify the branch, tag, or commit SHA to checkout
-          ref: master
-          # Optional: Specify a directory path to check out into.
-          # This is recommended when checking out external repos
-          # to avoid conflicts with the default workspace directory.
-          path: ./bazel-repo
+          submodules: recursive
       # TODO enable -c opt later    
+      # for now only fastbuild
       - name: Build
         run: bazelisk --batch --nohome_rc --nosystem_rc build --stamp "--embed_label=$(git rev-parse --short HEAD)" //src:bazel
         working-directory: ./bazel-repo
