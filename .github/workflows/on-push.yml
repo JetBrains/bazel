@@ -18,12 +18,12 @@ jobs:
       jb_bazel_version: ${{ steps.set_params.outputs.jb_bazel_version }}
       bazel_tag: ${{ steps.set_params.outputs.bazel_tag }}
     steps:
-      id: set_params
-      run: |
-        set -e -x -u -o pipefail
-        bazel_tag="$(cat bazel-tag.txt)"
-        echo "jb_bazel_version=${bazel_tag}.jb.$(date +%Y%m%d).$GITHUB_RUN_NUMBER" | tee -a "$GITHUB_OUTPUT"
-        echo "bazel_tag=$bazel_tag" | tee -a "$GITHUB_OUTPUT"
+      - id: set_params
+        run: |
+          set -e -x -u -o pipefail
+          bazel_tag="$(cat bazel-tag.txt)"
+          echo "jb_bazel_version=${bazel_tag}.jb.$(date +%Y%m%d).$GITHUB_RUN_NUMBER" | tee -a "$GITHUB_OUTPUT"
+          echo "bazel_tag=$bazel_tag" | tee -a "$GITHUB_OUTPUT"
 
   build:
     name: Build
