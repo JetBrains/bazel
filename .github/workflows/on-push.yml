@@ -1,4 +1,4 @@
-name: Print Environment Variables # Name of the workflow displayed on GitHub
+name: Build
 
 on:
   push: # Trigger the workflow on every push event
@@ -10,14 +10,24 @@ concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true
 
+strategy:
+  fail-fast: true
+  matrix:
+    include:
+      os: windows-latest
+      exe: .exe
+    # os: [ubuntu-22.04, windows-latest]
+    #os: [windows-latest]
+
 jobs:
   print_vars:
-    name: BB
+    name: Build
     runs-on: ubuntu-22.04 # reasonable minimum version
 
     steps:
       - name: Print All Environment Variables
         run: env | sort # Execute the 'env' command to list all env vars, pipe to 'sort' for readability
+        if: runner.os == 'Linux'
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -25,10 +35,10 @@ jobs:
       # TODO enable -c opt later    
       # for now only fastbuild
       - name: Build
-        run: bazelisk --batch --nohome_rc --nosystem_rc build --stamp "--embed_label=$(git rev-parse --short HEAD)" //src:bazel
+        run: bazelisk --batch --nohome_rc --nosystem_rc build -c fastbuild --stamp "--embed_label=$(git rev-parse --short HEAD)" //src:bazel${{ matrix.exe }}
         working-directory: ./bazel
-      - name: LS
-        run: ls -lLR bazel/bazel-bin/
+      #- name: LS
+      #  run: ls -lLR bazel/bazel-bin/
   
 # Optional: Add checkout step if you need repo context, though not strictly needed for just printing env vars
 #      - name: Check out repository code
