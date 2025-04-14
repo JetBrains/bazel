@@ -34,11 +34,6 @@ jobs:
           env | sort
           mount
           echo ${{ runner.os }}
-      - name: pwd
-        shell: "C:\\Program Files\\Git\\bin\\bash.exe"
-        run: |
-          pwd
-        if: runner.os == 'Windows'
       - name: Install zip
         shell: bash
         run: |
