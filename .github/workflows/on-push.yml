@@ -24,7 +24,8 @@ jobs:
         run: |
           set -e -x -u -o pipefail
           bazel_tag="$(cat bazel-tag.txt)"
-          echo "jb_bazel_version=${bazel_tag}.jb.$(date +%Y%m%d).$GITHUB_RUN_NUMBER" | tee -a "$GITHUB_OUTPUT"
+          jb_bazel_version="${bazel_tag}.jb.$(date +%Y%m%d).$GITHUB_RUN_NUMBER"
+          echo "jb_bazel_version=$jb_bazel_version" | tee -a "$GITHUB_OUTPUT"
           echo "jb_bazel_label=$jb_bazel_version $(git rev-parse --short HEAD)" | tee -a "$GITHUB_OUTPUT"
           echo "bazel_tag=$bazel_tag" | tee -a "$GITHUB_OUTPUT"
 
