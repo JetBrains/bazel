@@ -26,9 +26,9 @@ jobs:
       # for now only fastbuild
       - name: Build
         run: bazelisk --batch --nohome_rc --nosystem_rc build --stamp "--embed_label=$(git rev-parse --short HEAD)" //src:bazel
-        working-directory: ./bazel-repo
+        working-directory: ./bazel
       - name: LS
-        run: ls -lR
+        run: ls -lLR bazel/bazel-bin/
   
 # Optional: Add checkout step if you need repo context, though not strictly needed for just printing env vars
 #      - name: Check out repository code
