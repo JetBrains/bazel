@@ -62,6 +62,11 @@ jobs:
             unzip
             patch
         if: runner.os == 'Windows'
+      - name: Print All Environment Variables
+        shell: bash
+        run: |
+          env | sort
+          echo ${{ runner.os }}
       - name: Checkout
         uses: actions/checkout@v4
       #  with:
@@ -72,12 +77,10 @@ jobs:
       # TODO enable -c opt later    
       # for now only fastbuild
       - name: Build
-        run: |
-          if [ "${{ runner.os }}" -eq "Windows" ]; then
-            export BAZEL_SH=${{ env.MSYS2_PATH }}/usr/bin/bash.exe
-          fi
-          bazelisk --batch --nohome_rc --nosystem_rc ${{ matrix.output_user_root }} build --verbose_failures -c fastbuild --stamp "--embed_label=${{ needs.setup.outputs.jb_bazel_label }}" //src:bazel${{ matrix.exe }}
+        run: bazelisk --batch --nohome_rc --nosystem_rc ${{ matrix.output_user_root }} build --verbose_failures -c fastbuild --stamp "--embed_label=${{ needs.setup.outputs.jb_bazel_label }}" //src:bazel${{ matrix.exe }}
         working-directory: ./bazel
+        env:
+          BAZEL_SH: ${{ env.MSYS2_PATH }}/usr/bin/bash.exe
 
       - name: Publish
         uses: actions/upload-artifact@v4
