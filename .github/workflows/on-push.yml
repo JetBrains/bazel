@@ -72,7 +72,11 @@ jobs:
       # TODO enable -c opt later    
       # for now only fastbuild
       - name: Build
-        run: bazelisk --batch --nohome_rc --nosystem_rc ${{ matrix.output_user_root }} build --verbose_failures -c fastbuild --stamp "--embed_label=${{ needs.setup.outputs.jb_bazel_label }}" //src:bazel${{ matrix.exe }}
+        run: |
+          if [ "${{ runner.os }}" -eq "Windows" ]; then
+            export BAZEL_SH=${{ env.MSYS2_PATH }}/usr/bin/bash.exe
+          fi
+          bazelisk --batch --nohome_rc --nosystem_rc ${{ matrix.output_user_root }} build --verbose_failures -c fastbuild --stamp "--embed_label=${{ needs.setup.outputs.jb_bazel_label }}" //src:bazel${{ matrix.exe }}
         working-directory: ./bazel
 
       - name: Publish
