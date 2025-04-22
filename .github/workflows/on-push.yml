@@ -54,6 +54,7 @@ jobs:
           env | sort
           echo ${{ runner.os }}
       - name: Setup MSYS2
+        id: msys2
         uses: msys2/setup-msys2@v2
         with:
           update: true
@@ -80,7 +81,7 @@ jobs:
         run: bazelisk --batch --nohome_rc --nosystem_rc ${{ matrix.output_user_root }} build --verbose_failures -c fastbuild --stamp "--embed_label=${{ needs.setup.outputs.jb_bazel_label }}" //src:bazel${{ matrix.exe }}
         working-directory: ./bazel
         env:
-          BAZEL_SH: ${{ env.MSYS2_PATH }}/usr/bin/bash.exe
+          BAZEL_SH: ${{ steps.msys2.outputs.msys2-location }}/usr/bin/bash.exe
 
       - name: Publish
         uses: actions/upload-artifact@v4
