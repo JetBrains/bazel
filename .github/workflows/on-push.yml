@@ -53,15 +53,14 @@ jobs:
         run: |
           env | sort
           echo ${{ runner.os }}
-      - name: Install zip
-        shell: bash
-        run: |
-          set -x -u -e
-          curl -fsSL -o zip.tar.gz https://packages.jetbrains.team/files/p/ij/intellij-dependencies/msys/zip-3.0-4-x86_64.pkg.tar.gz
-          echo "d36a3475b43bd1e5de7616e74de6d5fce16a0e672fe93727a7994cf5bba3e113 *zip.tar.gz" | sha256sum --check --strict -
-          tar -x -f zip.tar.gz -z -C /
-          rm zip.tar.gz
-          zip -h
+      - name: Setup MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          install: >-
+            zip
+            unzip
+            patch
         if: runner.os == 'Windows'
       - name: Checkout
         uses: actions/checkout@v4
