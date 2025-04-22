@@ -59,10 +59,10 @@ jobs:
             exe: .exe
             artifact_os: windows
             artifact_arch: x86_64
-          - runner: windows-11-arm
-            exe: .exe
-            artifact_os: windows
-            artifact_arch: arm64
+          #- runner: windows-11-arm
+          #  exe: .exe
+          #  artifact_os: windows
+          #  artifact_arch: arm64
 
     steps:
       - name: Print All Environment Variables
