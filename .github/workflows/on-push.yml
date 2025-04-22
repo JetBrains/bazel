@@ -32,20 +32,34 @@ jobs:
 
   build:
     name: Build
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.runner }}
     needs: setup
 
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         include:
-          - os: windows-latest
+          - runner: ubuntu-22.04
+            exe: ''
+            artifact_os: linux
+            artifact_arch: x86_64
+          - runner: ubuntu-22.04-arm
+            exe: ''
+            artifact_os: linux
+            artifact_arch: arm64
+          - runner: macos-13
+            exe: ''
+            artifact_os: darwin
+            artifact_arch: x86_64
+          - runner: macos-latest
+            exe: ''
+            artifact_os: darwin
+            artifact_arch: arm64
+          - runner: windows-latest
             exe: .exe
             artifact_os: windows
             artifact_arch: x86_64
             output_user_root: --output_user_root=C:/_bazel_user_root
-        # ubuntu-22.04 # reasonable minimum version    
-        # os: [ubuntu-22.04, windows-latest]
 
     steps:
       - name: Print All Environment Variables
@@ -75,14 +89,15 @@ jobs:
       - name: Checkout bazel
         shell: bash
         run: git clone --quiet -b ${{ needs.setup.outputs.bazel_tag }} --depth 1 https://github.com/bazelbuild/bazel.git bazel
+      - name: Configure
+        shell: bash
+        run: echo "BAZEL_SH=${{ steps.msys2.outputs.msys2-location }}/usr/bin/bash.exe" >>"$GITHUB_ENV"
+        if: runner.os == 'Windows'
       # TODO enable -c opt later    
       # for now only fastbuild
       - name: Build
         run: bazelisk --batch --nohome_rc --nosystem_rc ${{ matrix.output_user_root }} build --verbose_failures -c fastbuild --stamp "--embed_label=${{ needs.setup.outputs.jb_bazel_label }}" //src:bazel${{ matrix.exe }}
         working-directory: ./bazel
-        env:
-          BAZEL_SH: ${{ steps.msys2.outputs.msys2-location }}/usr/bin/bash.exe
-
       - name: Publish
         uses: actions/upload-artifact@v4
         with:
