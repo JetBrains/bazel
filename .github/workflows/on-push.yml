@@ -87,7 +87,7 @@ jobs:
         run: git clone --quiet -b ${{ needs.setup.outputs.bazel_tag }} --depth 1 https://github.com/bazelbuild/bazel.git bazel
       - name: Apply patches bazel
         shell: bash
-        run: git am ../patches/*.patch
+        run: git am --no-commit ../patches/*.patch
         working-directory: bazel
       - name: Configure
         shell: bash
