@@ -85,10 +85,11 @@ jobs:
         shell: bash
         run: |
           echo 'BAZEL_SH=${{ steps.msys2.outputs.msys2-location }}/usr/bin/bash.exe' >>"$GITHUB_ENV"
-          echo 'STARTUP_ARG_OUTPUT_USER_ROOT=--output_user_root=${{ env.HOMEDRIVE }}/_bazel_user_root' >>"$GITHUB_ENV"
+          echo "STARTUP_ARG_OUTPUT_USER_ROOT=--output_user_root=C:/_bazel_user_root" >>"$GITHUB_ENV"
+          echo 'BUILD_ARG_FEATURES_STATIC_LINK_MSVCRT=--features=static_link_msvcrt' >>"$GITHUB_ENV"
         if: runner.os == 'Windows'
       - name: Build
-        run: bazelisk --batch --nohome_rc --nosystem_rc ${{ env.STARTUP_ARG_OUTPUT_USER_ROOT }} build --verbose_failures --compilation_mode=opt --stamp "--embed_label=${{ needs.setup.outputs.jb_bazel_label }}" //src:bazel${{ matrix.exe }}
+        run: bazelisk --batch --nohome_rc --nosystem_rc ${{ env.STARTUP_ARG_OUTPUT_USER_ROOT }} build --verbose_failures --compilation_mode=opt --stamp "--embed_label=${{ needs.setup.outputs.jb_bazel_label }}" ${{ env.BUILD_ARG_FEATURES_STATIC_LINK_MSVCRT }} //src:bazel${{ matrix.exe }}
         working-directory: ./bazel
       - name: Publish
         uses: actions/upload-artifact@v4
