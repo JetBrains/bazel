@@ -43,6 +43,7 @@ jobs:
             exe: .exe
             artifact_os: windows
             artifact_arch: x86_64
+            output_user_root: --output_user_root=C:/_bazel_user_root
         # ubuntu-22.04 # reasonable minimum version    
         # os: [ubuntu-22.04, windows-latest]
 
@@ -72,7 +73,7 @@ jobs:
       # TODO enable -c opt later    
       # for now only fastbuild
       - name: Build
-        run: bazelisk --batch --nohome_rc --nosystem_rc build --verbose_failures -c fastbuild --stamp "--embed_label=${{ needs.setup.outputs.jb_bazel_label }}" //src:bazel${{ matrix.exe }}
+        run: bazelisk --batch --nohome_rc --nosystem_rc ${{ matrix.output_user_root }} build --verbose_failures -c fastbuild --stamp "--embed_label=${{ needs.setup.outputs.jb_bazel_label }}" //src:bazel${{ matrix.exe }}
         working-directory: ./bazel
 
       - name: Publish
