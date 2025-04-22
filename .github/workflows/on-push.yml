@@ -78,15 +78,18 @@ jobs:
       # TODO enable -c opt later    
       # for now only fastbuild
       - name: Build
-        run: bazelisk --batch --nohome_rc --nosystem_rc ${{ matrix.output_user_root }} build --verbose_failures -c fastbuild --stamp "--embed_label=${{ needs.setup.outputs.jb_bazel_label }}" //src:bazel${{ matrix.exe }}
+        shell: bash
+        run: |
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            export BAZEL_SH=${{ steps.msys2.outputs.msys2-location }}/usr/bin/bash.exe
+          fi
+          bazelisk --batch --nohome_rc --nosystem_rc ${{ matrix.output_user_root }} build --verbose_failures -c fastbuild --stamp "--embed_label=${{ needs.setup.outputs.jb_bazel_label }}" //src:bazel${{ matrix.exe }}
         working-directory: ./bazel
-        env:
-          BAZEL_SH: ${{ steps.msys2.outputs.msys2-location }}/usr/bin/bash.exe
-
       - name: Publish
         uses: actions/upload-artifact@v4
         with:
           name: bazel-${{ needs.setup.outputs.jb_bazel_version }}-${{ matrix.artifact_os }}-${{ matrix.artifact_arch }}${{ matrix.exe }}
+          path: ./bazel/bazel-bin/src/bazel${{ matrix.exe }}
       #- name: LS
       #  run: ls -lLR bazel/bazel-bin/
   
