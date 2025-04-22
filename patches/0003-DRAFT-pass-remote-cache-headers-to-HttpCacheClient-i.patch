@@ -1,0 +1,43 @@
+From e6a492b5080f5a0ee659a9f553ada1a9f7b85e51 Mon Sep 17 00:00:00 2001
+From: Ilia K <ki.stfu@gmail.com>
+Date: Mon, 14 Apr 2025 22:34:40 +0200
+Subject: [PATCH 3/3] DRAFT pass remote cache headers to HttpCacheClient in
+ CombinedCacheClientFactory#createHttp
+
+---
+ .../build/lib/remote/CombinedCacheClientFactory.java         | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/src/main/java/com/google/devtools/build/lib/remote/CombinedCacheClientFactory.java b/src/main/java/com/google/devtools/build/lib/remote/CombinedCacheClientFactory.java
+index 9a9cb4344f..62bd5d60a2 100644
+--- a/src/main/java/com/google/devtools/build/lib/remote/CombinedCacheClientFactory.java
++++ b/src/main/java/com/google/devtools/build/lib/remote/CombinedCacheClientFactory.java
+@@ -18,6 +18,7 @@ import com.google.auth.Credentials;
+ import com.google.common.base.Ascii;
+ import com.google.common.base.Preconditions;
+ import com.google.common.collect.ImmutableList;
++import com.google.common.collect.Iterables;
+ import com.google.devtools.build.lib.authandtls.AuthAndTLSOptions;
+ import com.google.devtools.build.lib.remote.common.RemoteCacheClient;
+ import com.google.devtools.build.lib.remote.disk.DiskCacheClient;
+@@ -101,7 +102,7 @@ public final class CombinedCacheClientFactory {
+               Math.toIntExact(options.remoteTimeout.getSeconds()),
+               options.remoteMaxConnections,
+               options.remoteVerifyDownloads,
+-              ImmutableList.copyOf(options.remoteHeaders),
++              ImmutableList.copyOf(Iterables.concat(options.remoteHeaders, options.remoteCacheHeaders)),
+               digestUtil,
+               retrier,
+               creds,
+@@ -115,7 +116,7 @@ public final class CombinedCacheClientFactory {
+             Math.toIntExact(options.remoteTimeout.getSeconds()),
+             options.remoteMaxConnections,
+             options.remoteVerifyDownloads,
+-            ImmutableList.copyOf(options.remoteHeaders),
++            ImmutableList.copyOf(Iterables.concat(options.remoteHeaders, options.remoteCacheHeaders)),
+             digestUtil,
+             retrier,
+             creds,
+-- 
+2.48.1
+
