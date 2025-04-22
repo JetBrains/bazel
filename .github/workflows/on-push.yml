@@ -59,7 +59,6 @@ jobs:
             exe: .exe
             artifact_os: windows
             artifact_arch: x86_64
-            output_user_root: --output_user_root=C:/_bazel_user_root
 
     steps:
       - name: Print All Environment Variables
@@ -77,38 +76,22 @@ jobs:
             unzip
             patch
         if: runner.os == 'Windows'
-      - name: Print All Environment Variables
-        shell: bash
-        run: |
-          env | sort
-          echo ${{ runner.os }}
       - name: Checkout
         uses: actions/checkout@v4
-      #  with:
-      #    submodules: recursive
       - name: Checkout bazel
         shell: bash
         run: git clone --quiet -b ${{ needs.setup.outputs.bazel_tag }} --depth 1 https://github.com/bazelbuild/bazel.git bazel
       - name: Configure
         shell: bash
-        run: echo "BAZEL_SH=${{ steps.msys2.outputs.msys2-location }}/usr/bin/bash.exe" >>"$GITHUB_ENV"
+        run: |
+          echo 'BAZEL_SH=${{ steps.msys2.outputs.msys2-location }}/usr/bin/bash.exe' >>"$GITHUB_ENV"
+          echo 'STARTUP_ARG_OUTPUT_USER_ROOT=--output_user_root=${{ env.HOMEDRIVE }}/_bazel_user_root' >>"$GITHUB_ENV"
         if: runner.os == 'Windows'
-      # TODO enable -c opt later    
-      # for now only fastbuild
       - name: Build
-        run: bazelisk --batch --nohome_rc --nosystem_rc ${{ matrix.output_user_root }} build --verbose_failures -c fastbuild --stamp "--embed_label=${{ needs.setup.outputs.jb_bazel_label }}" //src:bazel${{ matrix.exe }}
+        run: bazelisk --batch --nohome_rc --nosystem_rc ${{ env.STARTUP_ARG_OUTPUT_USER_ROOT }} build --verbose_failures --compilation_mode=opt --stamp "--embed_label=${{ needs.setup.outputs.jb_bazel_label }}" //src:bazel${{ matrix.exe }}
         working-directory: ./bazel
       - name: Publish
         uses: actions/upload-artifact@v4
         with:
           name: bazel-${{ needs.setup.outputs.jb_bazel_version }}-${{ matrix.artifact_os }}-${{ matrix.artifact_arch }}${{ matrix.exe }}
           path: ./bazel/bazel-bin/src/bazel${{ matrix.exe }}
-      #- name: LS
-      #  run: ls -lLR bazel/bazel-bin/
-  
-# Optional: Add checkout step if you need repo context, though not strictly needed for just printing env vars
-#      - name: Check out repository code
-#        uses: actions/checkout@v4
-
-#      - name: Print Variables After Checkout (might show slightly different vars)
-#        run: env | sort
