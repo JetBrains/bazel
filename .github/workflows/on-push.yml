@@ -33,17 +33,21 @@ jobs:
   build:
     name: Build
     runs-on: ${{ matrix.runner }}
+    container:
+      image: ${{ matrix.docker_image }}
     needs: setup
 
     strategy:
       fail-fast: false
       matrix:
         include:
-          - runner: ubuntu-22.04
+          - runner: ubuntu-latest
+            docker_image: ubuntu:20.04
             exe: ''
             artifact_os: linux
             artifact_arch: x86_64
-          - runner: ubuntu-22.04-arm
+          - runner: ubuntu-24.04-arm
+            docker_image: ubuntu:20.04
             exe: ''
             artifact_os: linux
             artifact_arch: arm64
@@ -69,9 +73,20 @@ jobs:
         shell: bash
         run: |
           env | sort
-          echo ${{ runner.os }}
-      - name: Setup MSYS2
+          echo ${{ runner.os }} ${{ runner.arch }}
+      - name: Set up prerequisites (Linux-only)
+        if: runner.os == 'Linux'
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          apt update
+          apt install -y curl git build-essential openjdk-21-jdk python zip unzip
+          # Set up Bazelisk
+          curl -L -o /usr/local/bin/bazelisk https://github.com/bazelbuild/bazelisk/releases/latest/download/bazelisk-linux-$([ "$(uname -m)" = "x86_64" ] && echo amd64 || echo arm64)
+          chmod +x /usr/local/bin/bazelisk
+      - name: Set up MSYS2 (Windows-only)
         id: msys2
+        if: runner.os == 'Windows'
         uses: msys2/setup-msys2@v2
         with:
           update: true
@@ -79,26 +94,25 @@ jobs:
             zip
             unzip
             patch
-        if: runner.os == 'Windows'
       - name: Checkout
         uses: actions/checkout@v4
       - name: Checkout bazel
         shell: bash
         run: git clone --quiet -b ${{ needs.setup.outputs.bazel_tag }} --depth 1 https://github.com/bazelbuild/bazel.git bazel
       - name: Apply patches bazel
+        working-directory: bazel
         shell: bash
         run: git apply ../patches/*.patch
-        working-directory: bazel
       - name: Configure
+        if: runner.os == 'Windows'
         shell: bash
         run: |
           echo 'BAZEL_SH=${{ steps.msys2.outputs.msys2-location }}/usr/bin/bash.exe' >>"$GITHUB_ENV"
           echo 'STARTUP_ARG_OUTPUT_USER_ROOT=--output_user_root=C:/_bazel_user_root' >>"$GITHUB_ENV"
           echo 'BUILD_ARG_FEATURES_STATIC_LINK_MSVCRT=--features=static_link_msvcrt' >>"$GITHUB_ENV"
-        if: runner.os == 'Windows'
       - name: Build
-        run: bazelisk --batch --nohome_rc --nosystem_rc ${{ env.STARTUP_ARG_OUTPUT_USER_ROOT }} build --verbose_failures --compilation_mode=opt --stamp "--embed_label=${{ needs.setup.outputs.jb_bazel_label }}" ${{ env.BUILD_ARG_FEATURES_STATIC_LINK_MSVCRT }} //src:bazel${{ matrix.exe }}
         working-directory: bazel
+        run: bazelisk --batch --nohome_rc --nosystem_rc ${{ env.STARTUP_ARG_OUTPUT_USER_ROOT }} build --verbose_failures --compilation_mode=opt --stamp "--embed_label=${{ needs.setup.outputs.jb_bazel_label }}" ${{ env.BUILD_ARG_FEATURES_STATIC_LINK_MSVCRT }} //src:bazel${{ matrix.exe }}
       - name: Publish
         uses: actions/upload-artifact@v4
         with:
