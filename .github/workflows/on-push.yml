@@ -73,7 +73,7 @@ jobs:
         shell: bash
         run: |
           env | sort
-          echo ${{ runner.os }} $${{ runner.arch }}
+          echo ${{ runner.os }} ${{ runner.arch }}
       - name: Set up prerequisites (Linux-only)
         if: runner.os == 'Linux'
         env:
