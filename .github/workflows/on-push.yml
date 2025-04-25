@@ -74,20 +74,15 @@ jobs:
         run: |
           env | sort
           echo ${{ runner.os }} $${{ runner.arch }}
-      #- name: Set up prerequisites (Linux-only)
-      #  if: runner.os == 'Linux'
-      #  env:
-      #    DEBIAN_FRONTEND: noninteractive
-      #  run: apt update && apt install -y git build-essential openjdk-21-jdk python zip unzip
-      - name: Set up Bazelisk (Linux-only)
+      - name: Set up prerequisites (Linux-only)
         if: runner.os == 'Linux'
-        uses: bazelbuild/setup-bazelisk@v3
-      - run: |
-          set -x
-          env | sort
-          ls -la /__t/bazelisk/1.26.0/x64
-          bazelisk --help
-          exit 1
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          apt update
+          apt install -y curl git build-essential openjdk-21-jdk python zip unzip
+          curl -L -o /usr/local/bin/bazelisk https://github.com/bazelbuild/bazelisk/releases/latest/download/bazelisk-linux-$([ "$(uname -m)" = "x86_64" ] && echo amd64 || echo arm64)
+          chmod +x /usr/local/bin/bazelisk
       - name: Set up MSYS2 (Windows-only)
         id: msys2
         if: runner.os == 'Windows'
