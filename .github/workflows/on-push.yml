@@ -81,7 +81,7 @@ jobs:
         run: apt update && apt install -y git build-essential openjdk-21-jdk python zip unzip
       - name: Set up Bazelisk (Linux-only)
         if: runner.os == 'Linux'
-        uses: bazel-contrib/setup-bazel@0.14.0
+        uses: bazelbuild/setup-bazelisk@v3
       - name: Set up MSYS2 (Windows-only)
         id: msys2
         if: runner.os == 'Windows'
