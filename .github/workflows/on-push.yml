@@ -33,6 +33,8 @@ jobs:
   build:
     name: Build
     runs-on: ${{ matrix.runner }}
+    container:
+      image: ${{ matrix.container_image }}
     needs: setup
 
     strategy:
@@ -43,6 +45,7 @@ jobs:
             exe: ''
             artifact_os: linux
             artifact_arch: x86_64
+            container_image: ubuntu:20.04
           - runner: ubuntu-22.04-arm
             exe: ''
             artifact_os: linux
