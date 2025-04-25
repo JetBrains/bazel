@@ -78,7 +78,7 @@ jobs:
         if: runner.os == 'Linux'
         env:
           DEBIAN_FRONTEND: noninteractive
-        run: apt update && apt install -y git build-essential openjdk-21-jdk python zip unzip
+        run: apt update && apt install -y bazelisk git build-essential openjdk-21-jdk python zip unzip
       - name: Set up MSYS2 (Windows-only)
         id: msys2
         if: runner.os == 'Windows'
