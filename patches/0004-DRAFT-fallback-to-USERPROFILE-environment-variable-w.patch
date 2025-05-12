@@ -1,0 +1,27 @@
+From b08c7b89db4c812d7820305b3f3fb45105372b72 Mon Sep 17 00:00:00 2001
+From: Ilia K <ki.stfu@gmail.com>
+Date: Mon, 12 May 2025 21:30:40 +0200
+Subject: [PATCH 4/4] DRAFT fallback to USERPROFILE environment variable when
+ locating .netrc in GoogleAuthUtils#newCredentialsFromNetrc
+
+---
+ .../google/devtools/build/lib/authandtls/GoogleAuthUtils.java  | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/main/java/com/google/devtools/build/lib/authandtls/GoogleAuthUtils.java b/src/main/java/com/google/devtools/build/lib/authandtls/GoogleAuthUtils.java
+index 9b2adaf604..e579bd45e6 100644
+--- a/src/main/java/com/google/devtools/build/lib/authandtls/GoogleAuthUtils.java
++++ b/src/main/java/com/google/devtools/build/lib/authandtls/GoogleAuthUtils.java
+@@ -352,7 +352,8 @@ public final class GoogleAuthUtils {
+       Map<String, String> clientEnv, FileSystem fileSystem) throws IOException {
+     Optional<String> netrcFileString =
+         Optional.ofNullable(clientEnv.get("NETRC"))
+-            .or(() -> Optional.ofNullable(clientEnv.get("HOME")).map(home -> home + "/.netrc"));
++            .or(() -> Optional.ofNullable(clientEnv.get("HOME")).map(home -> home + "/.netrc"))
++            .or(() -> Optional.ofNullable(clientEnv.get("USERPROFILE")).map(home -> home + "\\.netrc"));
+     if (netrcFileString.isEmpty()) {
+       return Optional.empty();
+     }
+-- 
+2.49.0
+
