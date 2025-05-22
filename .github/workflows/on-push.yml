@@ -63,10 +63,11 @@ jobs:
             exe: .exe
             artifact_os: windows
             artifact_arch: x86_64
-          #- runner: windows-11-arm
-          #  exe: .exe
-          #  artifact_os: windows
-          #  artifact_arch: arm64
+          - runner: windows-latest
+            exe: .exe
+            artifact_os: windows
+            artifact_arch: arm64
+            config: --config=windows_arm64
 
     steps:
       - name: Print All Environment Variables
@@ -112,7 +113,7 @@ jobs:
           echo 'BUILD_ARG_FEATURES_STATIC_LINK_MSVCRT=--features=static_link_msvcrt' >>"$GITHUB_ENV"
       - name: Build
         working-directory: bazel
-        run: bazelisk --batch --nohome_rc --nosystem_rc ${{ env.STARTUP_ARG_OUTPUT_USER_ROOT }} build --verbose_failures --compilation_mode=opt --stamp "--embed_label=${{ needs.setup.outputs.jb_bazel_label }}" ${{ env.BUILD_ARG_FEATURES_STATIC_LINK_MSVCRT }} //src:bazel${{ matrix.exe }}
+        run: bazelisk --batch --nohome_rc --nosystem_rc ${{ env.STARTUP_ARG_OUTPUT_USER_ROOT }} build --verbose_failures --compilation_mode=opt ${{ matrix.config }} --stamp "--embed_label=${{ needs.setup.outputs.jb_bazel_label }}" ${{ env.BUILD_ARG_FEATURES_STATIC_LINK_MSVCRT }} //src:bazel${{ matrix.exe }}
       - name: Publish
         uses: actions/upload-artifact@v4
         with:
