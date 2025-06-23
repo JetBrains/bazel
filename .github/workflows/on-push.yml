@@ -89,8 +89,6 @@ jobs:
             unzip \
             which
 
-          ln -sf /usr/bin/python3 /usr/bin/python
-
           # Set up Bazelisk
           curl -L -o /usr/local/bin/bazelisk https://github.com/bazelbuild/bazelisk/releases/latest/download/bazelisk-linux-$([ "$(uname -m)" = "x86_64" ] && echo amd64 || echo arm64)
           chmod +x /usr/local/bin/bazelisk
