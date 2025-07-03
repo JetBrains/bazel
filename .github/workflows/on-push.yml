@@ -106,11 +106,11 @@ jobs:
         uses: actions/checkout@v4
       - name: Checkout bazel
         shell: bash
-        run: git clone --quiet -b ${{ needs.setup.outputs.bazel_tag }} --depth 1 https://github.com/bazelbuild/bazel.git bazel
+        run: git clone --quiet -b ${{ needs.setup.outputs.bazel_tag }} --config core.autocrlf=false --depth 1 https://github.com/bazelbuild/bazel.git bazel
       - name: Apply patches bazel
         working-directory: bazel
         shell: bash
-        run: git apply ../patches/*.patch
+        run: git apply --ignore-whitespace ../patches/*.patch
       - name: Configure
         if: runner.os == 'Windows'
         shell: bash
