@@ -1,0 +1,19 @@
+Subject: [PATCH] allow network-inbound to workaround binding on ipv4 localhost in darwin-sandbox
+---
+Index: src/main/java/com/google/devtools/build/lib/sandbox/DarwinSandboxedSpawnRunner.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/google/devtools/build/lib/sandbox/DarwinSandboxedSpawnRunner.java b/src/main/java/com/google/devtools/build/lib/sandbox/DarwinSandboxedSpawnRunner.java
+--- a/src/main/java/com/google/devtools/build/lib/sandbox/DarwinSandboxedSpawnRunner.java	(revision 615b63dd005923e12e1356c1368e80dd121f2c5a)
++++ b/src/main/java/com/google/devtools/build/lib/sandbox/DarwinSandboxedSpawnRunner.java	(date 1754296277776)
+@@ -298,7 +298,7 @@
+ 
+       if (!allowNetwork) {
+         out.println("(deny network*)");
+-        out.println("(allow network-inbound (local ip \"localhost:*\"))");
++        out.println("(allow network-inbound (local ip \"*:*\"))");
+         out.println("(allow network* (remote ip \"localhost:*\"))");
+         out.println("(allow network* (remote unix-socket))");
+       }
