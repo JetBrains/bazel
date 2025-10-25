@@ -1,0 +1,27 @@
+From ed617079a8ee2eabcc886b455819ac1e035bb0c2 Mon Sep 17 00:00:00 2001
+From: Ilia K <ki.stfu@gmail.com>
+Date: Sat, 25 Oct 2025 17:23:54 +0200
+Subject: [PATCH] DRAFT zulu v21.40.17 windows arm64
+
+---
+ repositories.bzl | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/repositories.bzl b/repositories.bzl
+index b0d73053c3..78ad8c843e 100644
+--- a/repositories.bzl
++++ b/repositories.bzl
+@@ -130,8 +130,8 @@ def embedded_jdk_repositories():
+     http_file(
+         name = "openjdk_win_arm64_vanilla",
+         downloaded_file_path = "jbrsdk-win-arm64.zip",
+-        sha256 = "4883cf39e8d83679c8a051ace4dd72759d97195a72aaa6727a83bd4bcb97b022",
+-        url = "https://cdn.azul.com/zulu/bin/zulu25.30.17-ca-jdk25.0.1-win_aarch64.zip",
++        sha256 = "57c568355b97d288f12b720760d802b1a19c55e9b0707a5c2ad76d34fd893db8",
++        url = "https://cdn.azul.com/zulu/bin/zulu21.40.17-ca-jdk21.0.6-win_aarch64.zip",
+     )
+ 
+ def _async_profiler_repos(ctx):
+-- 
+2.50.1
+
