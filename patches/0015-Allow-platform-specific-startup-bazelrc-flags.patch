@@ -1,0 +1,192 @@
+From 742313b0f369e2b534db826c4d285f877302aa52 Mon Sep 17 00:00:00 2001
+From: Keith Smiley <keithbsmiley@gmail.com>
+Date: Wed, 3 Sep 2025 00:50:51 +0000
+Subject: [PATCH] Allow platform-specific startup bazelrc flags
+
+This enables the use of `startup:linux`, `startup:macos`, etc. This is
+always enabled.
+
+Fixes https://github.com/bazelbuild/bazel/issues/22763
+
+RELNOTES[inc]: Add support for `startup:linux`, `startup:macos`, etc
+bazelrc options.
+
+(cherry picked from commit d5945de76692240ca7303f1e95be2374d68ac607)
+---
+ site/en/run/bazelrc.md                        |  5 +++
+ src/main/cpp/option_processor.cc              | 26 +++++++++++
+ .../build/lib/runtime/BlazeOptionHandler.java |  6 ++-
+ src/test/cpp/rc_file_test.cc                  | 45 +++++++++++++++++++
+ src/test/cpp/rc_options_test.cc               | 24 ++++++++++
+ 5 files changed, 105 insertions(+), 1 deletion(-)
+
+diff --git a/site/en/run/bazelrc.md b/site/en/run/bazelrc.md
+index b01b510117..a544b5b1bf 100644
+--- a/site/en/run/bazelrc.md
++++ b/site/en/run/bazelrc.md
+@@ -219,6 +219,11 @@ automatically enabled. Supported OS identifiers are `linux`, `macos`, `windows`,
+ 
+ See [--enable_platform_specific_config](/reference/command-line-reference#flag--enable_platform_specific_config).
+ 
++Platform specific configurations also apply to `startup` options. For
++example `startup:linux --some_startup_option` will be applied when the
++host OS is Linux. Supported OS identifiers are `linux`, `macos`,
++`windows`, `freebsd`, and `openbsd`. This behavior is always enabled.
++
+ #### Example {:#bazelrc-example}
+ 
+ Here's an example `~/.bazelrc` file:
+diff --git a/src/main/cpp/option_processor.cc b/src/main/cpp/option_processor.cc
+index 1cb6672099..848687e985 100644
+--- a/src/main/cpp/option_processor.cc
++++ b/src/main/cpp/option_processor.cc
+@@ -585,6 +585,32 @@ blaze_exit_code::ExitCode OptionProcessor::ParseStartupOptions(
+     }
+   }
+ 
++  std::string platform_config;
++#if defined(__linux__)
++  platform_config = "linux";
++#elif defined(__APPLE__)
++  platform_config = "macos";
++#elif defined(_WIN32)
++  platform_config = "windows";
++#elif defined(__FreeBSD__)
++  platform_config = "freebsd";
++#elif defined(__OpenBSD__)
++  platform_config = "openbsd";
++#endif
++
++  if (!platform_config.empty()) {
++    for (const auto* blazerc : rc_files) {
++      const auto iter = blazerc->options().find("startup:" + platform_config);
++      if (iter == blazerc->options().end()) continue;
++
++      for (const RcOption& option : iter->second) {
++        const std::string& source_path =
++            blazerc->canonical_source_paths()[option.source_index];
++        rcstartup_flags.push_back({source_path, option.option});
++      }
++    }
++  }
++
+   for (const std::string& arg : cmd_line_->startup_args) {
+     if (!IsArg(arg)) {
+       break;
+diff --git a/src/main/java/com/google/devtools/build/lib/runtime/BlazeOptionHandler.java b/src/main/java/com/google/devtools/build/lib/runtime/BlazeOptionHandler.java
+index 3c05a4442e..dd912eaff2 100644
+--- a/src/main/java/com/google/devtools/build/lib/runtime/BlazeOptionHandler.java
++++ b/src/main/java/com/google/devtools/build/lib/runtime/BlazeOptionHandler.java
+@@ -90,6 +90,9 @@ public final class BlazeOptionHandler {
+   // being ignored as long as they are recognized by at least one (other) command.
+   static final String COMMON_PSEUDO_COMMAND = "common";
+ 
++  // Startup options are processed by the C++ client before the Java server starts.
++  private static final String STARTUP_PSEUDO_COMMAND = "startup";
++
+   private static final ImmutableSet<String> BUILD_COMMAND_ANCESTORS =
+       ImmutableSet.of("build", COMMON_PSEUDO_COMMAND, ALWAYS_PSEUDO_COMMAND);
+ 
+@@ -638,7 +641,8 @@ public final class BlazeOptionHandler {
+       }
+       if (!validCommands.contains(command)
+           && !command.equals(ALWAYS_PSEUDO_COMMAND)
+-          && !command.equals(COMMON_PSEUDO_COMMAND)) {
++          && !command.equals(COMMON_PSEUDO_COMMAND)
++          && !command.equals(STARTUP_PSEUDO_COMMAND)) {
+         eventHandler.handle(
+             Event.warn(
+                 "while reading option defaults file '"
+diff --git a/src/test/cpp/rc_file_test.cc b/src/test/cpp/rc_file_test.cc
+index 5b65f71438..768e2fdb88 100644
+--- a/src/test/cpp/rc_file_test.cc
++++ b/src/test/cpp/rc_file_test.cc
+@@ -605,6 +605,51 @@ TEST_F(ParseOptionsTest, CommandLineBazelrcHasPriorityOverDefaultBazelrc) {
+                    "--max_idle_secs=123\n"));
+ }
+ 
++TEST_F(ParseOptionsTest, PlatformSpecificBazelrcOptions) {
++  std::string workspace_rc;
++  ASSERT_TRUE(SetUpWorkspaceRcFile(
++      "startup --max_idle_secs=1\n"
++      "startup:linux --max_idle_secs=2\n"
++      "startup:macos --max_idle_secs=3\n"
++      "startup:windows --max_idle_secs=4\n"
++      "startup:freebsd --max_idle_secs=5\n"
++      "startup:openbsd --max_idle_secs=6\n", &workspace_rc));
++
++  const std::vector<std::string> args = {binary_path_, "build"};
++  ParseOptionsAndCheckOutput(args, blaze_exit_code::SUCCESS, "", "");
++
++  int expected = 1;
++#if defined(__linux__)
++  expected = 2;
++#elif defined(__APPLE__)
++  expected = 3;
++#elif defined(_WIN32)
++  expected = 4;
++#elif defined(__FreeBSD__)
++  expected = 5;
++#elif defined(__OpenBSD__)
++  expected = 6;
++#endif
++
++  EXPECT_EQ(expected, option_processor_->GetParsedStartupOptions()->max_idle_secs);
++
++  testing::internal::CaptureStderr();
++  option_processor_->PrintStartupOptionsProvenanceMessage();
++  const std::string output = testing::internal::GetCapturedStderr();
++
++  if (expected > 1) {
++    EXPECT_THAT(
++        output,
++        MatchesRegex("INFO: Reading 'startup' options from .*workspace.*bazelrc: "
++                    "--max_idle_secs=1 --max_idle_secs=" + std::to_string(expected) + "\n"));
++  } else {
++    EXPECT_THAT(
++        output,
++        MatchesRegex("INFO: Reading 'startup' options from .*workspace.*bazelrc: "
++                    "--max_idle_secs=1\n"));
++  }
++}
++
+ class BlazercImportTest : public ParseOptionsTest {
+  protected:
+   void TestBazelRcImportsMaintainsFlagOrdering(const std::string& import_type) {
+diff --git a/src/test/cpp/rc_options_test.cc b/src/test/cpp/rc_options_test.cc
+index 2dab134675..3ab4f9bfa2 100644
+--- a/src/test/cpp/rc_options_test.cc
++++ b/src/test/cpp/rc_options_test.cc
+@@ -567,5 +567,29 @@ TEST(RemoteFileTest, ParsingRemoteFiles) {
+                                                    "--max_idle_secs=123")))))));
+ }
+ 
++TEST_F(RcOptionsTest, StartupConfigurationPlatformSpecific) {
++  WriteRc("startup_config.bazelrc",
++          "startup --max_idle_secs=10800  # Default\n"
++          "startup:linux --max_idle_secs=3600  # Linux specific\n"
++          "startup:linux --connect_timeout_secs=60  # Linux specific\n"
++          "startup:macos --max_idle_secs=1800  # macOS Specific\n"
++          "startup:macos --connect_timeout_secs=120  # macOS Specific\n");
++  SuccessfullyParseRcWithExpectedArgs(
++      "startup_config.bazelrc",
++      {{"startup", {"--max_idle_secs=10800"}},
++       {"startup:linux", {"--max_idle_secs=3600", "--connect_timeout_secs=60"}},
++       {"startup:macos", {"--max_idle_secs=1800", "--connect_timeout_secs=120"}}});
++}
++
++TEST_F(RcOptionsTest, StartupConfigurationMultipleOptionsForPlatform) {
++  WriteRc("startup_config_multiple.bazelrc",
++          "startup:linux --host_jvm_args=-Xms256m\n"
++          "startup:linux --host_jvm_args=-Xmx2g\n"
++          "startup:linux --connect_timeout_secs=120\n");
++  SuccessfullyParseRcWithExpectedArgs(
++      "startup_config_multiple.bazelrc",
++      {{"startup:linux", {"--host_jvm_args=-Xms256m", "--host_jvm_args=-Xmx2g", "--connect_timeout_secs=120"}}});
++}
++
+ }  // namespace
+ }  // namespace blaze
+-- 
+2.50.1
+
