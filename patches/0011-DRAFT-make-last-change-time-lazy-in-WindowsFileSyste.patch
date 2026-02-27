@@ -9,19 +9,19 @@ Subject: [PATCH 2/3] DRAFT make last change time lazy in
  1 file changed, 20 insertions(+), 7 deletions(-)
 
 diff --git a/src/main/java/com/google/devtools/build/lib/windows/WindowsFileSystem.java b/src/main/java/com/google/devtools/build/lib/windows/WindowsFileSystem.java
-index 0769e066e4..ee4234cdeb 100644
+index 0b18563..76afd47 100644
 --- a/src/main/java/com/google/devtools/build/lib/windows/WindowsFileSystem.java
 +++ b/src/main/java/com/google/devtools/build/lib/windows/WindowsFileSystem.java
-@@ -27,6 +27,7 @@ import java.io.FileNotFoundException;
- import java.io.IOException;
+@@ -31,6 +31,7 @@ import java.nio.file.FileAlreadyExistsException;
  import java.nio.file.Files;
  import java.nio.file.LinkOption;
+ import java.nio.file.NoSuchFileException;
 +import java.nio.file.Path;
  import java.nio.file.attribute.DosFileAttributes;
- 
+
  /** File system implementation for Windows. */
-@@ -142,18 +143,16 @@ public class WindowsFileSystem extends JavaIoFileSystem {
- 
+@@ -149,18 +150,16 @@ public class WindowsFileSystem extends JavaIoFileSystem {
+
    @Override
    protected FileStatus stat(PathFragment path, boolean followSymlinks) throws IOException {
 -    File file = getIoFile(path);
@@ -33,7 +33,7 @@ index 0769e066e4..ee4234cdeb 100644
      } catch (IOException e) {
        throw new FileNotFoundException(path + ERR_NO_SUCH_FILE_OR_DIR);
      }
- 
+
      // BasicFileAttributes#isOther is true iff FILE_ATTRIBUTE_DEVICE or FILE_ATTRIBUTE_REPARSE_POINT, assume no devices under output user root
      final boolean isSymbolicLink = !followSymlinks && (attributes.isSymbolicLink() || attributes.isOther());
 -    final long lastChangeTime =
@@ -41,10 +41,10 @@ index 0769e066e4..ee4234cdeb 100644
      FileStatus status =
          new FileStatus() {
            @Override
-@@ -189,9 +188,23 @@ public class WindowsFileSystem extends JavaIoFileSystem {
+@@ -196,9 +195,23 @@ public class WindowsFileSystem extends JavaIoFileSystem {
              return attributes.lastModifiedTime().toMillis();
            }
- 
+
 +          private volatile Long myLastChangeTime;
 +
            @Override
@@ -64,12 +64,12 @@ index 0769e066e4..ee4234cdeb 100644
 +              return myLastChangeTime;
 +            }
            }
- 
+
            @Override
-@@ -271,9 +284,9 @@ public class WindowsFileSystem extends JavaIoFileSystem {
+@@ -278,9 +291,9 @@ public class WindowsFileSystem extends JavaIoFileSystem {
      return WindowsFileOperations.isSymlinkOrJunction(file.getPath());
    }
- 
+
 -  private static DosFileAttributes getAttribs(File file, boolean followSymlinks)
 +  private static DosFileAttributes getAttribs(Path path, boolean followSymlinks)
        throws IOException {
@@ -78,6 +78,6 @@ index 0769e066e4..ee4234cdeb 100644
 +        path, DosFileAttributes.class, symlinkOpts(followSymlinks));
    }
  }
--- 
+--
 2.50.1
 
