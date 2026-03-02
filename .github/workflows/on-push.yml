@@ -5,6 +5,7 @@ on:
     branches:
       - '**' # Run on pushes to any branch
   pull_request:
+  workflow_dispatch:
 
 # Prevent multiple runs for the same ref from overlapping
 concurrency:
