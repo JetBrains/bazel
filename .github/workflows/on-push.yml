@@ -53,7 +53,7 @@ jobs:
             exe: ''
             artifact_os: linux
             artifact_arch: arm64
-          - runner: macos-14
+          - runner: macos-15-intel
             exe: ''
             artifact_os: darwin
             artifact_arch: x86_64
