@@ -1,7 +1,7 @@
-From b08c7b89db4c812d7820305b3f3fb45105372b72 Mon Sep 17 00:00:00 2001
+From 13446cb00673a6bc7acb45c7d3e7b44d119e93f3 Mon Sep 17 00:00:00 2001
 From: Ilia K <ki.stfu@gmail.com>
 Date: Mon, 12 May 2025 21:30:40 +0200
-Subject: [PATCH 4/4] DRAFT fallback to USERPROFILE environment variable when
+Subject: [PATCH 1/5] DRAFT fallback to USERPROFILE environment variable when
  locating .netrc in GoogleAuthUtils#newCredentialsFromNetrc
 
 ---
@@ -9,10 +9,10 @@ Subject: [PATCH 4/4] DRAFT fallback to USERPROFILE environment variable when
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/src/main/java/com/google/devtools/build/lib/authandtls/GoogleAuthUtils.java b/src/main/java/com/google/devtools/build/lib/authandtls/GoogleAuthUtils.java
-index 9b2adaf604..e579bd45e6 100644
+index e5a22cff2c..aa6c68ff62 100644
 --- a/src/main/java/com/google/devtools/build/lib/authandtls/GoogleAuthUtils.java
 +++ b/src/main/java/com/google/devtools/build/lib/authandtls/GoogleAuthUtils.java
-@@ -352,7 +352,8 @@ public final class GoogleAuthUtils {
+@@ -353,7 +353,8 @@ public final class GoogleAuthUtils {
        Map<String, String> clientEnv, FileSystem fileSystem) throws IOException {
      Optional<String> netrcFileString =
          Optional.ofNullable(clientEnv.get("NETRC"))
@@ -23,5 +23,5 @@ index 9b2adaf604..e579bd45e6 100644
        return Optional.empty();
      }
 -- 
-2.49.0
+2.50.1 (Apple Git-155)
 
