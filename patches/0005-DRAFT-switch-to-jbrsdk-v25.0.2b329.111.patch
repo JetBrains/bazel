@@ -1,0 +1,91 @@
+From 391b92cb558d0aa348a5af3ff1da29661ec27d9f Mon Sep 17 00:00:00 2001
+From: Mikhail Filippov <mikhail@filippov.me>
+Date: Tue, 21 Apr 2026 20:28:00 +0400
+Subject: [PATCH 5/5] DRAFT switch to jbrsdk v25.0.2b329.111
+
+---
+ repositories.bzl    | 30 +++++++++++++++---------------
+ src/minimize_jdk.sh | 10 ++++++++++
+ 2 files changed, 25 insertions(+), 15 deletions(-)
+
+diff --git a/repositories.bzl b/repositories.bzl
+index 68177831f6..9cc162f9dc 100644
+--- a/repositories.bzl
++++ b/repositories.bzl
+@@ -81,15 +81,15 @@ def embedded_jdk_repositories():
+     """OpenJDK distributions used to create a version of Bazel bundled with the OpenJDK."""
+     http_file(
+         name = "openjdk_linux_vanilla",
+-        integrity = "sha256-8XUtAFG2yiM2Jd2ywYyRcO2+VcXuZRW/79jqAZfuHCA=",
+-        downloaded_file_path = "zulu-linux-vanilla.tar.gz",
+-        url = "https://cdn.azul.com/zulu/bin/zulu25.32.17-ca-jdk25.0.2-linux_x64.tar.gz",
++        integrity = "sha512-OlJXUubWbkpWByKA54o0RyJKqzHL32Di1d9hORuZcBE9atotjb9jGWS1IQqMvJ1n66O3J+bfsDDpk8Dh2abOuA==",
++        downloaded_file_path = "jbrsdk-linux-vanilla.tar.gz",
++        url = "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-25.0.2-linux-x64-b329.111.tar.gz",
+     )
+     http_file(
+         name = "openjdk_linux_aarch64_vanilla",
+-        integrity = "sha256-9ylaux3ssvbg6p92CnCRfy1HNW20Nm1hXHq5sBw8aGY=",
+-        downloaded_file_path = "zulu-linux-aarch64-vanilla.tar.gz",
+-        url = "https://cdn.azul.com/zulu/bin/zulu25.32.17-ca-jdk25.0.2-linux_aarch64.tar.gz",
++        integrity = "sha512-X6nVdnndy2x9x3lVA49mpK0xnEUYioJyEV8OaTu+hsCXayjLJogSqBjg0wqarD/9MX628st0DLz5IU5J1bnLMQ==",
++        downloaded_file_path = "jbrsdk-linux-aarch64-vanilla.tar.gz",
++        url = "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-25.0.2-linux-aarch64-b329.111.tar.gz",
+     )
+     http_file(
+         name = "openjdk_linux_ppc64le_vanilla",
+@@ -111,21 +111,21 @@ def embedded_jdk_repositories():
+     )
+     http_file(
+         name = "openjdk_macos_x86_64_vanilla",
+-        integrity = "sha256-/iI0bBkpIMW4SyP0qiTj3rsLuU/EKAFvfCssd5DIJ4A=",
+-        downloaded_file_path = "zulu-macos-vanilla.tar.gz",
+-        url = "https://cdn.azul.com/zulu/bin/zulu25.32.17-ca-jdk25.0.2-macosx_x64.tar.gz",
++        integrity = "sha512-8Q1+PKkfGOA3+wRbyKOLfCt20+dK8roWpZhITFImLtD1eNeoY5FAPBg4DjKV8RDTdvWSe7UEKiQ4ax6V0TfcOg==",
++        downloaded_file_path = "jbrsdk-macos-vanilla.tar.gz",
++        url = "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-25.0.2-osx-x64-b329.111.tar.gz",
+     )
+     http_file(
+         name = "openjdk_macos_aarch64_vanilla",
+-        integrity = "sha256-U3rHT6HKLE3Y9gY93t4BOK5KiW8Si/4QtCin3MSqkp8=",
+-        downloaded_file_path = "zulu-macos-aarch64-vanilla.tar.gz",
+-        url = "https://cdn.azul.com/zulu/bin/zulu25.32.17-ca-jdk25.0.2-macosx_aarch64.tar.gz",
++        integrity = "sha512-OhOTID301GU/LfUj/2uoiYBjN+6Xt346bcEuzN6UcOG0OmRJq8kxJrS3NNBHE8ih3ntDc/oQlQR6NZlHsJYduw==",
++        downloaded_file_path = "jbrsdk-macos-aarch64-vanilla.tar.gz",
++        url = "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-25.0.2-osx-aarch64-b329.111.tar.gz",
+     )
+     http_file(
+         name = "openjdk_win_vanilla",
+-        integrity = "sha256-kLy7y+L7euxDzo/S76Ak/MSPALvc16drWPkS1rl+bVY=",
+-        downloaded_file_path = "zulu-win-vanilla.zip",
+-        url = "https://cdn.azul.com/zulu/bin/zulu25.32.17-ca-jdk25.0.2-win_x64.zip",
++        integrity = "sha512-fL3Gh01pChn0n9ZVWePTRE+OjLDGvZ71HBPogNh0RIr7zs7qbWHljcGOFahX9KYFVZwpZuXgeHir/eSQ7edoCA==",
++        downloaded_file_path = "jbrsdk-win-vanilla.zip",
++        url = "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-25.0.2-windows-x64-b329.111.zip",
+     )
+     http_file(
+         name = "openjdk_win_arm64_vanilla",
+diff --git a/src/minimize_jdk.sh b/src/minimize_jdk.sh
+index 32a2f274fd..7d37a45c20 100755
+--- a/src/minimize_jdk.sh
++++ b/src/minimize_jdk.sh
+@@ -123,6 +123,16 @@ else
+   tar xf "$tooljdk" --no-same-owner --strip-components=1 -C tool_jdk
+   mkdir target_jdk
+   tar xf "$fulljdk" --no-same-owner --strip-components=1 -C target_jdk
++  # JBR macOS ships the JDK under Contents/Home; flatten that into tool_jdk/target_jdk.
++  if [[ "$UNAME" =~ darwin ]]; then
++    for dir in tool_jdk target_jdk; do
++      if [ -d "$dir/Contents/Home" ]; then
++        mv "$dir/Contents/Home" "${dir}.home.$$"
++        rm -rf "$dir"
++        mv "${dir}.home.$$" "$dir"
++      fi
++    done
++  fi
+   cd target_jdk
+   # If the full JDK doesn't ship with jmods (e.g. JEP 493), use the separately
+   # provided jmods archive.
+-- 
+2.50.1 (Apple Git-155)
+

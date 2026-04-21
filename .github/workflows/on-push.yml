@@ -3,14 +3,14 @@ name: Build
 on:
   push: # Trigger the workflow on every push event
     branches:
-      - '**' # Run on pushes to any branch
+      - "**" # Run on pushes to any branch
   pull_request:
   workflow_dispatch:
 
 # Prevent multiple runs for the same ref from overlapping
 concurrency:
-    group: ${{ github.workflow }}-${{ github.ref }}
-    cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   setup:
@@ -45,20 +45,20 @@ jobs:
         include:
           - runner: ubuntu-latest
             docker_image: oraclelinux:8
-            exe: ''
+            exe: ""
             artifact_os: linux
             artifact_arch: x86_64
           - runner: ubuntu-24.04-arm
             docker_image: oraclelinux:8
-            exe: ''
+            exe: ""
             artifact_os: linux
             artifact_arch: arm64
           - runner: macos-15-intel
-            exe: ''
+            exe: ""
             artifact_os: darwin
             artifact_arch: x86_64
           - runner: macos-latest
-            exe: ''
+            exe: ""
             artifact_os: darwin
             artifact_arch: arm64
           - runner: windows-latest
