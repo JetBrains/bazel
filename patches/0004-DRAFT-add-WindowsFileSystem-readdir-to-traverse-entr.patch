@@ -1,15 +1,15 @@
-From d9a9b10d1428a9b75f9d7ab2c84b10b5aa046df5 Mon Sep 17 00:00:00 2001
-From: Mikhail Filippov <mikhail@filippov.me>
-Date: Tue, 21 Apr 2026 19:31:44 +0400
+From 97fdf87ddc0d0c1afc17e110f860b61e28a378d6 Mon Sep 17 00:00:00 2001
+From: Ilia Kirianovskii <Ilia.Kirianovskii@jetbrains.com>
+Date: Sat, 2 May 2026 12:41:22 +0200
 Subject: [PATCH 4/5] DRAFT add WindowsFileSystem#readdir to traverse entries
  w/ their attributes at once
 
 ---
- .../build/lib/windows/WindowsFileSystem.java  | 58 +++++++++++++++++++
- 1 file changed, 58 insertions(+)
+ .../build/lib/windows/WindowsFileSystem.java  | 53 +++++++++++++++++++
+ 1 file changed, 53 insertions(+)
 
 diff --git a/src/main/java/com/google/devtools/build/lib/windows/WindowsFileSystem.java b/src/main/java/com/google/devtools/build/lib/windows/WindowsFileSystem.java
-index e0e077a7c6..87a561f9ce 100644
+index 7c98485b17..69631bc86e 100644
 --- a/src/main/java/com/google/devtools/build/lib/windows/WindowsFileSystem.java
 +++ b/src/main/java/com/google/devtools/build/lib/windows/WindowsFileSystem.java
 @@ -14,11 +14,13 @@
@@ -44,7 +44,7 @@ index e0e077a7c6..87a561f9ce 100644
  import javax.annotation.Nullable;
  
  /** File system implementation for Windows. */
-@@ -110,6 +120,54 @@ public class WindowsFileSystem extends JavaIoFileSystem {
+@@ -110,6 +120,49 @@ public class WindowsFileSystem extends JavaIoFileSystem {
              WindowsFileOperations.readSymlinkOrJunction(nioPath.toString())));
    }
  
@@ -65,7 +65,14 @@ index e0e077a7c6..87a561f9ce 100644
 +
 +  @Override
 +  public Collection<Dirent> readdir(PathFragment path, boolean followSymlinks) throws IOException {
-+    Path root = getNioPath(path);
++    Path nioPath = getNioPath(path);
++    // readdir's contract follows symlinks when resolving the directory itself
++    // regardless of followSymlinks (which only governs entry types). Resolve a
++    // symlinked root explicitly: walkFileTree(NOFOLLOW) otherwise treats an
++    // NTFS symbolic link to a directory as a file (JDK-8364277). Junctions
++    // already report isDirectory()==true and aren't seen as symlinks here.
++    final Path root =
++        !followSymlinks && Files.isSymbolicLink(nioPath) ? nioPath.toRealPath() : nioPath;
 +    List<Dirent> dirents = Lists.newArrayList();
 +    Files.walkFileTree(
 +        root,
@@ -80,18 +87,6 @@ index e0e077a7c6..87a561f9ce 100644
 +                    direntFromBasicFileAttributes(followSymlinks, attrs)));
 +            return FileVisitResult.CONTINUE;
 +          }
-+
-+          @Override
-+          public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
-+            if (dir.equals(root)) {
-+              return FileVisitResult.CONTINUE;
-+            }
-+            dirents.add(
-+                new Dirent(
-+                    dir.getFileName().toString(),
-+                    direntFromBasicFileAttributes(followSymlinks, attrs)));
-+            return FileVisitResult.SKIP_SUBTREE;
-+          }
 +        });
 +    return dirents;
 +  }
@@ -100,5 +95,5 @@ index e0e077a7c6..87a561f9ce 100644
    public boolean supportsSymbolicLinksNatively(PathFragment path) {
      return createSymbolicLinks;
 -- 
-2.50.1 (Apple Git-155)
+2.53.0
 
