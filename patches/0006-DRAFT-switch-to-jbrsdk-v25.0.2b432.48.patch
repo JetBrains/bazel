@@ -1,15 +1,15 @@
 From 391b92cb558d0aa348a5af3ff1da29661ec27d9f Mon Sep 17 00:00:00 2001
 From: Mikhail Filippov <mikhail@filippov.me>
-Date: Tue, 21 Apr 2026 20:28:00 +0400
-Subject: [PATCH 6/6] DRAFT switch to jbrsdk v25.0.2b329.111
+Date: Tue, 5 May 2026 14:58:00 +0400
+Subject: [PATCH 6/6] DRAFT switch to jbrsdk v25.0.2b432.48
 
 ---
- repositories.bzl    | 30 +++++++++++++++---------------
+ repositories.bzl    | 30 +++++++++++++-----------------
  src/minimize_jdk.sh | 10 ++++++++++
- 2 files changed, 25 insertions(+), 15 deletions(-)
+ 2 files changed, 23 insertions(+), 17 deletions(-)
 
 diff --git a/repositories.bzl b/repositories.bzl
-index 68177831f6..9cc162f9dc 100644
+index 68177831f6..e265aa88b9 100644
 --- a/repositories.bzl
 +++ b/repositories.bzl
 @@ -81,15 +81,15 @@ def embedded_jdk_repositories():
@@ -19,52 +19,65 @@ index 68177831f6..9cc162f9dc 100644
 -        integrity = "sha256-8XUtAFG2yiM2Jd2ywYyRcO2+VcXuZRW/79jqAZfuHCA=",
 -        downloaded_file_path = "zulu-linux-vanilla.tar.gz",
 -        url = "https://cdn.azul.com/zulu/bin/zulu25.32.17-ca-jdk25.0.2-linux_x64.tar.gz",
-+        integrity = "sha512-OlJXUubWbkpWByKA54o0RyJKqzHL32Di1d9hORuZcBE9atotjb9jGWS1IQqMvJ1n66O3J+bfsDDpk8Dh2abOuA==",
++        integrity = "sha256-p26MHvkW+E07KOZ5TRUn1RifmwKZoyPiHqc3vdk+rd0=",
 +        downloaded_file_path = "jbrsdk-linux-vanilla.tar.gz",
-+        url = "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-25.0.2-linux-x64-b329.111.tar.gz",
++        url = "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-25.0.2-linux-x64-b432.48.tar.gz",
      )
      http_file(
          name = "openjdk_linux_aarch64_vanilla",
 -        integrity = "sha256-9ylaux3ssvbg6p92CnCRfy1HNW20Nm1hXHq5sBw8aGY=",
 -        downloaded_file_path = "zulu-linux-aarch64-vanilla.tar.gz",
 -        url = "https://cdn.azul.com/zulu/bin/zulu25.32.17-ca-jdk25.0.2-linux_aarch64.tar.gz",
-+        integrity = "sha512-X6nVdnndy2x9x3lVA49mpK0xnEUYioJyEV8OaTu+hsCXayjLJogSqBjg0wqarD/9MX628st0DLz5IU5J1bnLMQ==",
++        integrity = "sha256-sqfhDIC5VgvuQuL29p1Ekdx0Nip8o3gknsVFqDFV61c=",
 +        downloaded_file_path = "jbrsdk-linux-aarch64-vanilla.tar.gz",
-+        url = "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-25.0.2-linux-aarch64-b329.111.tar.gz",
++        url = "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-25.0.2-linux-aarch64-b432.48.tar.gz",
      )
      http_file(
          name = "openjdk_linux_ppc64le_vanilla",
-@@ -111,21 +111,21 @@ def embedded_jdk_repositories():
+@@ -111,31 +111,27 @@ def embedded_jdk_repositories():
      )
      http_file(
          name = "openjdk_macos_x86_64_vanilla",
 -        integrity = "sha256-/iI0bBkpIMW4SyP0qiTj3rsLuU/EKAFvfCssd5DIJ4A=",
 -        downloaded_file_path = "zulu-macos-vanilla.tar.gz",
 -        url = "https://cdn.azul.com/zulu/bin/zulu25.32.17-ca-jdk25.0.2-macosx_x64.tar.gz",
-+        integrity = "sha512-8Q1+PKkfGOA3+wRbyKOLfCt20+dK8roWpZhITFImLtD1eNeoY5FAPBg4DjKV8RDTdvWSe7UEKiQ4ax6V0TfcOg==",
++        integrity = "sha256-rrQzrvi+3Ni6MpY4V5IwlqA72Hym67emWnnYtBuX3sM=",
 +        downloaded_file_path = "jbrsdk-macos-vanilla.tar.gz",
-+        url = "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-25.0.2-osx-x64-b329.111.tar.gz",
++        url = "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-25.0.2-osx-x64-b432.48.tar.gz",
      )
      http_file(
          name = "openjdk_macos_aarch64_vanilla",
 -        integrity = "sha256-U3rHT6HKLE3Y9gY93t4BOK5KiW8Si/4QtCin3MSqkp8=",
 -        downloaded_file_path = "zulu-macos-aarch64-vanilla.tar.gz",
 -        url = "https://cdn.azul.com/zulu/bin/zulu25.32.17-ca-jdk25.0.2-macosx_aarch64.tar.gz",
-+        integrity = "sha512-OhOTID301GU/LfUj/2uoiYBjN+6Xt346bcEuzN6UcOG0OmRJq8kxJrS3NNBHE8ih3ntDc/oQlQR6NZlHsJYduw==",
++        integrity = "sha256-FQHtjxXBF2q8iV1uPPK1JWIVL5cx7AJLVS5L7yTwK/k=",
 +        downloaded_file_path = "jbrsdk-macos-aarch64-vanilla.tar.gz",
-+        url = "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-25.0.2-osx-aarch64-b329.111.tar.gz",
++        url = "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-25.0.2-osx-aarch64-b432.48.tar.gz",
      )
      http_file(
          name = "openjdk_win_vanilla",
 -        integrity = "sha256-kLy7y+L7euxDzo/S76Ak/MSPALvc16drWPkS1rl+bVY=",
 -        downloaded_file_path = "zulu-win-vanilla.zip",
 -        url = "https://cdn.azul.com/zulu/bin/zulu25.32.17-ca-jdk25.0.2-win_x64.zip",
-+        integrity = "sha512-fL3Gh01pChn0n9ZVWePTRE+OjLDGvZ71HBPogNh0RIr7zs7qbWHljcGOFahX9KYFVZwpZuXgeHir/eSQ7edoCA==",
++        integrity = "sha256-l7vD6zIn45k1KztfuxQ4bIJV995Akw7Lxz+caGPIzXI=",
 +        downloaded_file_path = "jbrsdk-win-vanilla.zip",
-+        url = "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-25.0.2-windows-x64-b329.111.zip",
++        url = "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-25.0.2-windows-x64-b432.48.zip",
      )
      http_file(
          name = "openjdk_win_arm64_vanilla",
+-        integrity = "sha256-zhWbTuPBCc1RNXrPhCZBQsHdsOGHjSBGbqxQsBU0cVQ=",
+-        downloaded_file_path = "zulu-win-arm64.zip",
+-        # Use an EA release of 25.0.3 here since versions <= 25.0.2 are affected by a severe JDK bug
+-        # that causes virtual threads (and thus repo rules) to hang indefinitely on Windows ARM64.
+-        # https://github.com/bazelbuild/bazel/issues/28520
+-        # https://mail.openjdk.org/pipermail/loom-dev/2026-February/008286.html
+-        url = "https://github.com/adoptium/temurin25-binaries/releases/download/jdk-25.0.3%2B1-ea-beta/OpenJDK25U-jdk_aarch64_windows_hotspot_25.0.3_1-ea.zip",
++        integrity = "sha256-hhE2CdQezMfhOzYlm64Nt0tq5HwYKuOZ43zEIZJciPg=",
++        downloaded_file_path = "jbrsdk-win-arm64-vanilla.zip",
++        url = "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-25.0.2-windows-aarch64-b432.48.zip",
+     )
+
+     # The Adoptium Temurin JDK above has JEP 493 enabled, which means it does not ship with jmods.
 diff --git a/src/minimize_jdk.sh b/src/minimize_jdk.sh
 index 32a2f274fd..7d37a45c20 100755
 --- a/src/minimize_jdk.sh
@@ -86,6 +99,6 @@ index 32a2f274fd..7d37a45c20 100755
    cd target_jdk
    # If the full JDK doesn't ship with jmods (e.g. JEP 493), use the separately
    # provided jmods archive.
--- 
+--
 2.50.1 (Apple Git-155)
 
