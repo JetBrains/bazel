@@ -1,7 +1,7 @@
 From 13446cb00673a6bc7acb45c7d3e7b44d119e93f3 Mon Sep 17 00:00:00 2001
 From: Ilia K <ki.stfu@gmail.com>
 Date: Mon, 12 May 2025 21:30:40 +0200
-Subject: [PATCH 1/5] DRAFT fallback to USERPROFILE environment variable when
+Subject: [PATCH 1/6] DRAFT fallback to USERPROFILE environment variable when
  locating .netrc in GoogleAuthUtils#newCredentialsFromNetrc
 
 ---

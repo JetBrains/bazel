@@ -1,7 +1,7 @@
 From 391b92cb558d0aa348a5af3ff1da29661ec27d9f Mon Sep 17 00:00:00 2001
 From: Mikhail Filippov <mikhail@filippov.me>
 Date: Tue, 21 Apr 2026 20:28:00 +0400
-Subject: [PATCH 5/5] DRAFT switch to jbrsdk v25.0.2b329.111
+Subject: [PATCH 6/6] DRAFT switch to jbrsdk v25.0.2b329.111
 
 ---
  repositories.bzl    | 30 +++++++++++++++---------------
