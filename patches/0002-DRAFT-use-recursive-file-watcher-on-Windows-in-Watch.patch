@@ -1,7 +1,7 @@
 From f66cc49105ceffc1f2b20f7f2f68ffbd0ef1eb78 Mon Sep 17 00:00:00 2001
 From: Ilia K <ki.stfu@gmail.com>
 Date: Tue, 2 Sep 2025 12:32:02 +0200
-Subject: [PATCH 2/5] DRAFT use recursive file watcher on Windows in
+Subject: [PATCH 2/6] DRAFT use recursive file watcher on Windows in
  WatchServiceDiffAwareness (#12573)
 
 ---
