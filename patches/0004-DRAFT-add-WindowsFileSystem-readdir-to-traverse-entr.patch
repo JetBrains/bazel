@@ -5,8 +5,8 @@ Subject: [PATCH 4/6] DRAFT add WindowsFileSystem#readdir to traverse entries
  w/ their attributes at once
 
 ---
- .../build/lib/windows/WindowsFileSystem.java  | 53 +++++++++++++++++++
- 1 file changed, 53 insertions(+)
+ .../build/lib/windows/WindowsFileSystem.java  | 73 +++++++++++++++++++
+ 1 file changed, 73 insertions(+)
 
 diff --git a/src/main/java/com/google/devtools/build/lib/windows/WindowsFileSystem.java b/src/main/java/com/google/devtools/build/lib/windows/WindowsFileSystem.java
 index 7c98485b17..69631bc86e 100644
@@ -26,7 +26,7 @@ index 7c98485b17..69631bc86e 100644
  import com.google.devtools.build.lib.vfs.FileStatus;
  import com.google.devtools.build.lib.vfs.JavaIoFileSystem;
  import com.google.devtools.build.lib.vfs.PathFragment;
-@@ -26,9 +28,17 @@ import com.google.devtools.build.lib.vfs.SymlinkTargetType;
+@@ -26,9 +28,19 @@ import com.google.devtools.build.lib.vfs.SymlinkTargetType;
  import java.io.File;
  import java.io.FileNotFoundException;
  import java.io.IOException;
@@ -34,6 +34,8 @@ index 7c98485b17..69631bc86e 100644
 +import java.nio.file.FileVisitResult;
  import java.nio.file.Files;
  import java.nio.file.LinkOption;
++import java.nio.file.NoSuchFileException;
++import java.nio.file.NotDirectoryException;
 +import java.nio.file.Path;
 +import java.nio.file.SimpleFileVisitor;
 +import java.nio.file.attribute.BasicFileAttributes;
@@ -44,7 +46,7 @@ index 7c98485b17..69631bc86e 100644
  import javax.annotation.Nullable;
  
  /** File system implementation for Windows. */
-@@ -110,6 +120,49 @@ public class WindowsFileSystem extends JavaIoFileSystem {
+@@ -110,6 +122,67 @@ public class WindowsFileSystem extends JavaIoFileSystem {
              WindowsFileOperations.readSymlinkOrJunction(nioPath.toString())));
    }
  
@@ -71,23 +73,41 @@ index 7c98485b17..69631bc86e 100644
 +    // symlinked root explicitly: walkFileTree(NOFOLLOW) otherwise treats an
 +    // NTFS symbolic link to a directory as a file (JDK-8364277). Junctions
 +    // already report isDirectory()==true and aren't seen as symlinks here.
-+    final Path root =
-+        !followSymlinks && Files.isSymbolicLink(nioPath) ? nioPath.toRealPath() : nioPath;
++    final Path root;
++    try {
++      root =
++          !followSymlinks && Files.isSymbolicLink(nioPath) ? nioPath.toRealPath() : nioPath;
++    } catch (NoSuchFileException e) {
++      throw new FileNotFoundException(path + ERR_NO_SUCH_FILE_OR_DIR);
++    }
 +    List<Dirent> dirents = Lists.newArrayList();
-+    Files.walkFileTree(
-+        root,
-+        followSymlinks ? Set.of(FileVisitOption.FOLLOW_LINKS) : Set.of(),
-+        1,
-+        new SimpleFileVisitor<Path>() {
-+          @Override
-+          public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-+            dirents.add(
-+                new Dirent(
-+                    file.getFileName().toString(),
-+                    direntFromBasicFileAttributes(followSymlinks, attrs)));
-+            return FileVisitResult.CONTINUE;
-+          }
-+        });
++    try {
++      Files.walkFileTree(
++          root,
++          followSymlinks ? Set.of(FileVisitOption.FOLLOW_LINKS) : Set.of(),
++          1,
++          new SimpleFileVisitor<Path>() {
++            @Override
++            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
++                throws IOException {
++              // walkFileTree happily calls visitFile on the start path when it's
++              // not a directory; surface this as NotDirectoryException so the
++              // outer catch maps it to the same error JavaIoFileSystem produces.
++              if (file.equals(root)) {
++                throw new NotDirectoryException(file.toString());
++              }
++              dirents.add(
++                  new Dirent(
++                      file.getFileName().toString(),
++                      direntFromBasicFileAttributes(followSymlinks, attrs)));
++              return FileVisitResult.CONTINUE;
++            }
++          });
++    } catch (NoSuchFileException e) {
++      throw new FileNotFoundException(path + ERR_NO_SUCH_FILE_OR_DIR);
++    } catch (NotDirectoryException e) {
++      throw new IOException(path + ERR_NOT_A_DIRECTORY);
++    }
 +    return dirents;
 +  }
 +
