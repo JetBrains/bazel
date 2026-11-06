@@ -1,0 +1,105 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mikhail Filippov <mikhail@filippov.me>
+Date: Fri, 6 Nov 2026 03:01:53 -0800
+Subject: [PATCH] Keep SYSTEMROOT and SYSTEMDRIVE in the strict repo env on
+ Windows (#32440)
+
+Keep SYSTEMROOT and SYSTEMDRIVE in the strict repo env on Windows
+
+### Description
+
+On Windows, `--experimental_strict_repo_env` now keeps `SYSTEMDRIVE` and
+`SYSTEMROOT` in the repository environment, next to `PATH` and `PATHEXT`.
+
+#27745 removed the shell test of the strict environment. I can restore
+it with checks for the two variables if you want one here.
+
+### Motivation
+
+A process that `ctx.execute` starts under the strict mode runs without
+`SYSTEMROOT`. Winsock expands `%SystemRoot%` in the paths of its
+providers, so every DNS lookup in that process fails. `go mod download`
+in Gazelle's `go_repository` fails with `getaddrinfow: A non-recoverable
+error occurred during a database lookup`.
+
+`WindowsSubprocessFactory` adds both variables to every process, but it
+reads them from the environment that the caller passes. For
+`ctx.execute`, that is the already filtered repository environment, so
+the fallback finds nothing.
+
+The two variables describe the operating system, not the user, like
+`PATHEXT`. They stay visible in `ctx.os.environ`, and
+`--repo_env==SYSTEMROOT` removes them. Making the fallback in
+`WindowsSubprocessFactory` independent of the caller would change every
+Windows subprocess of Bazel, so it is left for a separate change.
+
+Fixes #32439
+
+### Build API Changes
+
+No
+
+### Checklist
+
+- [ ] I have added tests for the new use cases (if any).
+- [x] I have updated the documentation (if applicable).
+
+### Release Notes
+
+RELNOTES: On Windows, [`--experimental_strict_repo_env`](https://bazel.build/reference/command-line-reference#flag--experimental_strict_repo_env) now keeps `SYSTEMROOT` and `SYSTEMDRIVE` in the repository environment.
+
+Closes #32440
+
+COPYBARA_INTEGRATE_REVIEW=https://github.com/bazelbuild/bazel/pull/32440 from mfilippov:mf/fix-windows-dns-resolution 2fe32926d45462337acc5c656dc6c7084966c560
+PiperOrigin-RevId: 1015403059
+Change-Id: I64af1fa67c3f98e89fbbcc287be63cbcef8297c6
+
+Upstream commit: https://github.com/bazelbuild/bazel/commit/81c7f896ca492cce0995a6848fb0a065eb23f6b7
+---
+ .../devtools/build/lib/runtime/CommandEnvironment.java      | 6 ++++--
+ .../devtools/build/lib/runtime/CommonCommandOptions.java    | 5 +++--
+ 2 files changed, 7 insertions(+), 4 deletions(-)
+
+diff --git a/src/main/java/com/google/devtools/build/lib/runtime/CommandEnvironment.java b/src/main/java/com/google/devtools/build/lib/runtime/CommandEnvironment.java
+index bf344b1..d3616d1 100644
+--- a/src/main/java/com/google/devtools/build/lib/runtime/CommandEnvironment.java
++++ b/src/main/java/com/google/devtools/build/lib/runtime/CommandEnvironment.java
+@@ -104,7 +104,9 @@ import javax.annotation.concurrent.GuardedBy;
+  */
+ public class CommandEnvironment {
+   private static final ImmutableSet<String> ALWAYS_INHERITED_REPO_ENV =
+-      OS.getCurrent() == OS.WINDOWS ? ImmutableSet.of("PATH", "PATHEXT") : ImmutableSet.of("PATH");
++      OS.getCurrent() == OS.WINDOWS
++          ? ImmutableSet.of("PATH", "PATHEXT", "SYSTEMDRIVE", "SYSTEMROOT")
++          : ImmutableSet.of("PATH");
+ 
+   private final BlazeRuntime runtime;
+   private final BlazeWorkspace workspace;
+@@ -1005,7 +1007,7 @@ public class CommandEnvironment {
+    * <ul>
+    *   <li>the client environment as the base;
+    *   <li>if {@code --experimental_strict_repo_env} is set, only the variables {@code PATH} and, on
+-   *       Windows only, {@code PATHEXT} are kept;
++   *       Windows only, {@code PATHEXT}, {@code SYSTEMDRIVE} and {@code SYSTEMROOT} are kept;
+    *   <li>if {@code --noincompatible_repo_env_ignores_action_env} is set, {@code --action_env} is
+    *       applied on top of that;
+    *   <li>finally, {@code --repo_env} is applied on top of that.
+diff --git a/src/main/java/com/google/devtools/build/lib/runtime/CommonCommandOptions.java b/src/main/java/com/google/devtools/build/lib/runtime/CommonCommandOptions.java
+index c8c5b7a..c692b85 100644
+--- a/src/main/java/com/google/devtools/build/lib/runtime/CommonCommandOptions.java
++++ b/src/main/java/com/google/devtools/build/lib/runtime/CommonCommandOptions.java
+@@ -642,8 +642,9 @@ public class CommonCommandOptions extends OptionsBase {
+       metadataTags = {OptionMetadataTag.EXPERIMENTAL},
+       help =
+           """
+-          If true, repository rules and module extensions will only inherit `PATH`, `PATHEXT`
+-          (on Windows), and environment variables explicitly specified by `--repo_env`.
++          If true, repository rules and module extensions will only inherit `PATH`, `PATHEXT`,
++          `SYSTEMDRIVE` and `SYSTEMROOT` (the last three on Windows), and environment variables
++          explicitly specified by `--repo_env`.
+ 
+           Note that unless `--incompatible_repo_env_ignores_action_env` is true,
+           `--action_env=NAME=VALUE` will also be included.
+-- 
+2.54.0 (Apple Git-157)
+
